@@ -29,6 +29,12 @@ resource "aws_security_group" "allowhttp" {
 		protocol  = "tcp"
 		cidr_blocks = ["0.0.0.0/0"]
 	}
+	ingress {
+		from_port = 5000
+		to_port   = 5000
+		protocol  = "tcp"
+		cidr_blocks = ["0.0.0.0/0"]
+	}
 	egress {
 		from_port = 443
 		to_port   = 443
@@ -77,23 +83,25 @@ resource "aws_instance" "website" {
 		inline = [
 			"sudo yum install nginx* -y",
 			"sudo systemctl start nginx",
-			"sudo mkdir -p /var/www/html/python/templates",
-			"sudo chmod 777 /var/www/html",
+			"sudo mkdir -p /usr/share/nginx/html/python/templates",
+			"sudo chmod 777 /usr/share/nginx/html/python/templates",
+			"sudo chmod 777 /usr/share/nginx/html/python",
+			"sudo chmod 777 /usr/share/nginx/html/index.html"
 		]
 	}
 
 #Copying files from local machine to remote host
         provisioner "file" {
-		source = "index.html"
-		destination = "/var/www/html/index.html"
+		source = "monitor.py"
+		destination = "/usr/share/nginx/html//python/monitor.py"
 	}
 	provisioner "file" {
-		source = "monitor.py"
-		desination = "/var/www/html/python/monitor.py"
+		source = "index.html"
+		destination = "/usr/share/nginx/html/index.html"
 	}
         provisioner "file" {
                 source = "templates/index.html"
-                destination = "/var/www/html/python/templates/index.html"
+                destination = "/usr/share/nginx/html/python/templates/index.html"
 	}
 	
 	provisioner "file" {
@@ -105,7 +113,7 @@ resource "aws_instance" "website" {
 		inline = [
 			"sudo yum install python3-pip -y",
 			"sudo pip3 install -r /tmp/requirements.txt",
-			"sudo python3 /var/www/html/python/monitor.py"
+			"sudo python3 /usr/share/nginx/html/python/monitor.py"
 		]
 	}
 
